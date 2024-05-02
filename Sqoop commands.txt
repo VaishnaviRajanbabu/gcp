@@ -1,0 +1,64 @@
+
+699  sqoop import --connect jdbc:mysql://localhost:3306/gcp --username root --password password --table StudentData --target-dir /sqoopdata -m 1
+
+711  sqoop import --connect jdbc:mysql://localhost:3306/gcp --username root --password password --table customer --target-dir /sqoopdata1
+
+721  sqoop import --connect jdbc:mysql://localhost:3306/gcp --username root --password password --table customer --where "country='US'" --target-dir /sqoopdata2
+
+sqoop import --connect jdbc:mysql://localhost:3306/gcp --username root --password password --query "select * from customer where country='UK' and \$CONDITIONS" --split-by cust_id --target-dir /sqoopdata4
+
+HIVE
+Table Create Command
+create table student(age int,gender varchar(50),name varchar(50),
+course varchar(50),roll int,marks int,email varchar(50)) 
+row format delimited fields terminated by ',';
+==================================================================================
+create table student(age int,gender varchar(50),name varchar(50),
+course varchar(50),roll int,marks int,email varchar(50)) 
+row format delimited fields terminated by ','
+tblproperties ('skip.header.line.count'='1');
+==================================================================================
+Load Data from Hadoop Path
+load data inpath 'hadoop path' into table student;
+load data inpath '/student/StudentData.csv' into table student;
+==================================================================================
+Load Data from local Path
+load data local inpath '/home/ubh01/Desktop/hive/StudentData.csv' into table student;
+==================================================================================
+create external table student(age int,gender varchar(50),name varchar(50),
+course varchar(50),roll int,marks int,email varchar(50)) 
+row format delimited fields terminated by ','
+tblproperties ('skip.header.line.count'='1');
+==================================================================================
+create external table source(age int,gender varchar(50),name varchar(50),
+course varchar(50),roll int,marks int,email varchar(50)) 
+row format delimited fields terminated by ','
+tblproperties ('skip.header.line.count'='1');
+load data local inpath '/home/ubh01/Desktop/hive/StudentData.csv' into table source;
+
+create external table source(age int,gender varchar(50),name varchar(50),
+course varchar(50),roll int,marks int,email varchar(50)) 
+row format delimited fields terminated by ','
+tblproperties ('skip.header.line.count'='1');
+load data local inpath '/home/ubh01/Desktop/hive/StudentData.csv' into table source;
+==================================================================================
+create table karthick as select * from source;
+desc karthick;
+select * from karthick;
+==================================================================================
+create table sp (age int,gender varchar(50),name varchar(50),
+roll int,marks int,email varchar(50))
+partitioned by (course varchar(50));
+ 
+insert into table sp partition(course='OOP') select age,gender,name,roll,marks,email from source where course='OOP';
+insert into table sp partition(course='Cloud') select age,gender,name,roll,marks,email from source where course='Cloud';
+insert into table sp partition(course='DSA') select age,gender,name,roll,marks,email from source where course='DSA';
+==================================================================================
+create table dp (age int,gender varchar(50),name varchar(50),
+roll int,marks int,email varchar(50))
+partitioned by (course varchar(50));
+ 
+set hive.exec.dynamic.partition.mode=nonstrict;
+ 
+insert into table dp partition(course) select age,gender,name,roll,marks,email,course from source where course='OOP';
+
